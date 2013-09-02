@@ -800,6 +800,32 @@ static json_t *json_real_copy(const json_t *real)
 }
 
 
+/*** snumber ***/
+
+// todo, all the other helper functions
+
+json_t *json_snumber_nocheck(const char *value)
+{
+    json_string_t *string;
+
+    if(!value)
+        return NULL;
+
+    string = jsonp_malloc(sizeof(json_string_t));
+    if(!string)
+        return NULL;
+    json_init(&string->json, JSON_SNUMBER);
+
+    string->value = jsonp_strdup(value);
+    if(!string->value) {
+        jsonp_free(string);
+        return NULL;
+    }
+
+    return &string->json;
+}
+
+
 /*** number ***/
 
 double json_number_value(const json_t *json)

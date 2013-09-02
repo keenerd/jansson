@@ -42,6 +42,7 @@ typedef enum {
     JSON_STRING,
     JSON_INTEGER,
     JSON_REAL,
+    JSON_SNUMBER,
     JSON_TRUE,
     JSON_FALSE,
     JSON_NULL
@@ -66,6 +67,7 @@ typedef long json_int_t;
 #endif /* JSON_INTEGER_IS_LONG_LONG */
 #endif
 
+// todo, extend tests for snumber
 #define json_typeof(json)      ((json)->type)
 #define json_is_object(json)   (json && json_typeof(json) == JSON_OBJECT)
 #define json_is_array(json)    (json && json_typeof(json) == JSON_ARRAY)
@@ -86,6 +88,7 @@ json_t *json_string(const char *value);
 json_t *json_string_nocheck(const char *value);
 json_t *json_integer(json_int_t value);
 json_t *json_real(double value);
+json_t *json_snumber_nocheck(const char *value);
 json_t *json_true(void);
 json_t *json_false(void);
 #define json_boolean(val)      ((val) ? json_true() : json_false())
@@ -207,6 +210,7 @@ int json_string_set(json_t *string, const char *value);
 int json_string_set_nocheck(json_t *string, const char *value);
 int json_integer_set(json_t *integer, json_int_t value);
 int json_real_set(json_t *real, double value);
+int json_snumber_set(json_t *snumber, const char *value);
 
 
 /* pack, unpack */
@@ -240,6 +244,7 @@ json_t *json_deep_copy(const json_t *value);
 #define JSON_DISABLE_EOF_CHECK  0x2
 #define JSON_DECODE_ANY         0x4
 #define JSON_DECODE_INT_AS_REAL 0x8
+#define JSON_DECODE_SNUMBER     0x10
 
 typedef size_t (*json_load_callback_t)(void *buffer, size_t buflen, void *data);
 

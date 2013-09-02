@@ -519,6 +519,8 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
 
         lex->token = TOKEN_INTEGER;
         lex->value.integer = value;
+        // save the string for snumber
+        lex->value.string = jsonp_malloc(lex->saved_text.length + 1);
         return 0;
     }
 
@@ -559,6 +561,8 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
 
     lex->token = TOKEN_REAL;
     lex->value.real = value;
+    // save the string for snumber
+    lex->value.string = jsonp_malloc(lex->saved_text.length + 1);
     return 0;
 
 out:
@@ -571,7 +575,8 @@ static int lex_scan(lex_t *lex, json_error_t *error)
 
     strbuffer_clear(&lex->saved_text);
 
-    if(lex->token == TOKEN_STRING) {
+    // probably should make a token_snumber, except flags are not available at this level
+    if(lex->token == TOKEN_STRING || lex->token == TOKEN_INTEGER || lex->token == TOKEN_REAL) {
         jsonp_free(lex->value.string);
         lex->value.string = NULL;
     }
@@ -658,7 +663,7 @@ static int lex_init(lex_t *lex, get_func get, void *data)
 
 static void lex_close(lex_t *lex)
 {
-    if(lex->token == TOKEN_STRING)
+    if(lex->token == TOKEN_STRING || lex->token == TOKEN_INTEGER || lex->token == TOKEN_REAL)
         jsonp_free(lex->value.string);
     strbuffer_close(&lex->saved_text);
 }
@@ -799,6 +804,8 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
                     return NULL;
                 }
                 json = json_real(value);
+            } else if (flags & JSON_DECODE_SNUMBER) {
+                json = json_snumber_nocheck(lex->value.string);
             } else {
                 json = json_integer(lex->value.integer);
             }
@@ -806,7 +813,11 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
         }
 
         case TOKEN_REAL: {
-            json = json_real(lex->value.real);
+            if (flags & JSON_DECODE_SNUMBER) {
+                json = json_snumber_nocheck(lex->value.string);
+            } else {
+                json = json_real(lex->value.real);
+            }
             break;
         }
 

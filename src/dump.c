@@ -214,6 +214,9 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             return dump(buffer, size, data);
         }
 
+        case JSON_SNUMBER:
+            return dump_string(json_string_value(json), dump, data, flags);
+
         case JSON_STRING:
             return dump_string(json_string_value(json), dump, data, flags);
 
